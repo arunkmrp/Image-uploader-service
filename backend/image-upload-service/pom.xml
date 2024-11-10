@@ -64,6 +64,11 @@
             <artifactId>jetty-servlet</artifactId>
             <version>11.0.8</version> <!-- Compatible with Dropwizard 4.x -->
         </dependency>
+        <dependency>
+    <groupId>org.mongodb</groupId>
+    <artifactId>mongodb-driver-sync</artifactId>
+    <version>4.8.1</version>
+</dependency>
 
 
 

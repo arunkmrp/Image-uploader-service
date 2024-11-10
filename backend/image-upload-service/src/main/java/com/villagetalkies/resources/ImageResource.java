@@ -26,6 +26,11 @@ import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import java.util.Iterator;
 
+import com.mongodb.client.MongoCollection;
+import com.mongodb.client.MongoDatabase;
+import org.bson.Document;
+import com.villagetalkies.MongoDBUtil;
+
 @Path("/images")
 @Produces(MediaType.APPLICATION_JSON)
 public class ImageResource {
@@ -97,7 +102,8 @@ public class ImageResource {
                 default:
                     return Response.status(Response.Status.BAD_REQUEST).entity("Unsupported format").build();
             }
-
+            // Save conversion data to MongoDB
+            saveConversionData(filename, format);
             java.nio.file.Path path = Paths.get(outputFilePath);
             return Response.ok(path.toFile())
                     .header("Content-Disposition", "attachment; filename=" + path.getFileName())
@@ -246,8 +252,32 @@ public class ImageResource {
         }
     }
 
+    // public void saveImageMetadata(String imageName, String format) {
+    // MongoDatabase database = MongoDBUtil.getDatabase();
+    // Document doc = new Document("imageName", imageName)
+    // .append("format", format);
+    // database.getCollection("imageMetadata").insertOne(doc);
+    // }
+
+    public void saveConversionData(String fileName, String format) {
+        MongoDatabase db = MongoDBUtil.getDatabase(); // Ensure MongoDBUtil is correctly configured
+        MongoCollection<Document> collection = db.getCollection("conversions");
+
+        Document doc = new Document("fileName", fileName)
+                .append("format", format)
+                .append("timestamp", System.currentTimeMillis());
+
+        collection.insertOne(doc);
+    }
+
+    // Method to close the connection to the database
+    public void closeDBConnection() {
+        MongoDBUtil.closeConnection();
+    }
+
     private String removeExtension(String filename) {
         int index = filename.lastIndexOf('.');
         return (index > 0) ? filename.substring(0, index) : filename;
     }
+
 }
